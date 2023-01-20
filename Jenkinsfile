@@ -11,6 +11,13 @@ pipeline{
   SERVER_CREDENTIALS = credentials('services-github')
  }
   stages{
+  stage("init"){
+   steps{
+    script{
+     gv = load "script.groovy"
+    }
+   }
+  }
    stage("build"){
    when{
     expression{
@@ -20,24 +27,23 @@ pipeline{
     }
    }
     steps{
-     echo " building the application version ${NEW_VERSION}"
-     echo " deploying with ${SERVER_CREDENTIALS}"
-     sh "${SERVER_CREDENTIALS}"
-     sh "mvn install"
-     //sh "gradle build"
+     script{
+      gv.buildApp()
+     }
     }
    }
    stage("test"){
    when{
     expression{
-      
     //BRANCH_NAME is an environment variable, i.e., always available in Jenkinsfile
      BRANCH_NAME == 'master' && params.executeTests
      //) && CODE_CHANGES == true
     }
    }
     steps{
-     echo 'testing the application ...'
+     script{
+      gv.testApp()
+     }
     }
    }
    stage("review"){
@@ -60,10 +66,8 @@ pipeline{
     }
    }
     steps{
-     echo "deploying the application: ${params.VERSION}"
-     withCredentials([usernamePassword(credentials: 'services-github', usernameVariable: USER, passwordVariable: PWD)])
-     {
-      sh "some script ${USER} ${PWD}"
+     script{
+      gv.deployApp()
      }
     }
    }
