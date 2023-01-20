@@ -10,7 +10,8 @@ pipeline{
    when{
     expression{
     //BRANCH_NAME is an environment variable, i.e., always available in Jenkinsfile
-     BRANCH_NAME == 'master' || 'summer-2020'
+     BRANCH_NAME == 'master' 
+     //|| 'summer-2020'
      //&& CODE_CHANGES == true
     }
    }
