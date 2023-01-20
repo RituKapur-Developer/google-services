@@ -1,15 +1,23 @@
 pipeline{
  agent any{
+ environment{
+  //accessible in all the code below
+  NEW_VERSION = '1.1.0'
+  SERVER_CREDENTIALS = credentials('services-github')
+ }
   stages{
    stage("build"){
    when{
     expression{
     //BRANCH_NAME is an environment variable, i.e., always available in Jenkinsfile
-     (BRANCH_NAME == 'master' || 'summer-2020') && CODE_CHANGES == true
+     BRANCH_NAME == 'master' || 'summer-2020'
+     //&& CODE_CHANGES == true
     }
    }
     steps{
-     echo 'building the application ...'
+     echo " building the application version ${NEW_VERSION}"
+     echo " deploying with ${SERVER_CREDENTIALS}"
+     sh "${SERVER_CREDENTIALS}"
     }
    }
    stage("test"){
@@ -41,28 +49,14 @@ pipeline{
     expression{
     //BRANCH_NAME is an environment variable, i.e., always available in Jenkinsfile
      BRANCH_NAME == 'master'
-     //) && CODE_CHANGES == true
     }
    }
     steps{
      echo 'deploying the application ...'
-    }
-   }
-   post{
-   //this will definitely execute like finally in java
-    always{
-     //specify the commands which need to be executed always
-     //any kind of connection close statements
-     echo 'I get executed always...'
-    }
-    success{
-     //commands which need to be executed in the case when everything went well
-     echo 'Build success'
-    }
-    failure{
-     //commands to perform in case of a build failure
-     //lets say you want to report the reason of failure
-     echo 'Build failure'
+     withCredentials([usernamePassword(credentials: 'services-github', usernameVariable: USER, passwordVariable: PWD)])
+     {
+      sh "some script ${USER} ${PWD}"
+     }
     }
    }
   }
